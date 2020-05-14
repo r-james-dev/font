@@ -99,15 +99,23 @@ class File(object):
             elif comp < length:
                 # decompress data
                 try:
-                    table = tables.new_table(utils.tag2str(tag), zlib.decompress(fp.read(comp)))
+                    table = tables.new_table(
+                        utils.tag2str(tag), zlib.decompress(fp.read(comp))
+                    )
 
                 except zlib.error:
                     raise Exception(
-                        "Invalid {} table; failed to decompress".format(utils.tag2str(tag))
+                        "Invalid {} table; failed to decompress".format(
+                            utils.tag2str(tag)
+                        )
                     )
 
             else:
-                raise Exception("Invalid {} table; compressed length is larger than original".format(utils.tag2str(tag)))
+                raise Exception(
+                    "Invalid {} table; compressed length is larger than original".format(
+                        utils.tag2str(tag)
+                    )
+                )
 
             obj.tables.append(table)
 

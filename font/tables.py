@@ -162,7 +162,9 @@ class GridFittingAndScanConversionProcedureTable(Table):
         self.ranges = []
         for _ in range(num_ranges):
             record = {}
-            record["rangeMaxPPEM"], record["rangeGaspBehavior"] = gasp_s.unpack(self.data.read(4))
+            record["rangeMaxPPEM"], record["rangeGaspBehavior"] = gasp_s.unpack(
+                self.data.read(4)
+            )
             self.ranges.append(record)
 
     def pack(self):
