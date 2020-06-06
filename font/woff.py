@@ -61,7 +61,7 @@ class File(object):
         if utils.tag2str(signature) != "wOFF":
             raise Exception(
                 "Invalid file signature; expected: 'wOFF', received: '{}'".format(
-                    signature
+                    utils.tag2str(signature)
                 )
             )
 
