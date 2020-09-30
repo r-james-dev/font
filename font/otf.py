@@ -1,10 +1,4 @@
-from . import tables, woff
-from .utils import (
-    calc_search_range,
-    check_range_overlap,
-    str2tag,
-    tag2str,
-)
+from . import tables, utils, woff
 import io
 import struct
 
@@ -46,33 +40,29 @@ class File(object):
         ranges = [range(HEADER_SIZE + num_tables * TABLE_SIZE)]
 
         for _ in range(num_tables):
-            tag, checksum, offset, length = table_s.unpack(fp.read(TABLE_SIZE))
+            tag, _, offset, length = table_s.unpack(fp.read(TABLE_SIZE))
 
             ranges.append(range(offset, offset + length))
 
             start = fp.tell()
             fp.seek(offset)
-            table = tables.new_table(tag2str(tag), fp.read(length))
+            table = tables.new_table(utils.tag2str(tag), fp.read(length), obj)
             fp.seek(start)
 
             obj.tables.append(table)
-            if checksum != table.checksum:
-                raise Exception(
-                    "Invalid {} table checksum, expected: {}, received: {}".format(
-                        table.tag, table.checksum, checksum
-                    )
-                )
 
-        obj.tables.sort(key=lambda table: str2tag(table.tag))
-        if check_range_overlap(ranges):
+        obj.tables.sort(key=lambda table: utils.str2tag(table.tag))
+        if utils.check_range_overlap(ranges):
             raise Exception("Invalid file; overlapping sections")
 
         return obj
 
     def to_bytes(self):
         """Returns a newly constructed bytes representation of the file."""
-        self.tables.sort(key=lambda table: str2tag(table.tag))
-        search_range, entry_selector, range_shift = calc_search_range(len(self.tables))
+        self.tables.sort(key=lambda table: utils.str2tag(table.tag))
+        search_range, entry_selector, range_shift = utils.calc_search_range(
+            len(self.tables)
+        )
         data = header_s.pack(
             self.sfnt_version,
             len(self.tables),
@@ -85,7 +75,7 @@ class File(object):
         for table in self.tables:
             table_data = table.pack()
             data += table_s.pack(
-                str2tag(table.tag), table.checksum, offset, len(table_data)
+                utils.str2tag(table.tag), table.checksum, offset, len(table_data)
             )
             font_data += table_data
             offset += len(table_data)

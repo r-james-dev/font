@@ -85,7 +85,7 @@ class File(object):
         ]
 
         for _ in range(num_tables):
-            tag, offset, comp, length, checksum = table_s.unpack(fp.read(TABLE_SIZE))
+            tag, offset, comp, length, _ = table_s.unpack(fp.read(TABLE_SIZE))
 
             ranges.append(range(offset, offset + comp))
 
@@ -94,13 +94,13 @@ class File(object):
 
             if comp == length:
                 # data left uncompressed
-                table = tables.new_table(utils.tag2str(tag), fp.read(length))
+                table = tables.new_table(utils.tag2str(tag), fp.read(length), obj)
 
             elif comp < length:
                 # decompress data
                 try:
                     table = tables.new_table(
-                        utils.tag2str(tag), zlib.decompress(fp.read(comp))
+                        utils.tag2str(tag), zlib.decompress(fp.read(comp)), obj
                     )
 
                 except zlib.error:
@@ -118,13 +118,6 @@ class File(object):
                 )
 
             obj.tables.append(table)
-
-            if checksum != table.checksum:
-                raise Exception(
-                    "Invalid {} table checksum; expected: {}, received: {}".format(
-                        table.tag, table.checksum, checksum
-                    )
-                )
 
         obj.tables.sort(key=lambda table: utils.str2tag(table.tag))
 

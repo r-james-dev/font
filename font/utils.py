@@ -53,82 +53,149 @@ def tag2str(tag):
     )
 
 
-def vary_lookup(index):
-    """Lookup information on vary encoded flags for WOFF2 files."""
-    t1 = sorted([0, 256, 512, 768, 1024] * 2)
-    t2 = sorted([1, 17, 33, 49] * 4)
-    t3 = sorted([1, 257, 513] * 4)
-    if index not in range(10):
-        x_sign = ["-+"][index % 2]
-
-    if index in range(20, 128):
-        y_sign = ["--++"][index % 4]
-
+def decode_triplet_encoding(index):
+    data = [None] * 7
+    sequence1 = sorted([0, 256, 512, 768, 1024] * 2)
+    sequence2 = sorted([1, 17, 33, 49] * 4)
+    sequence3 = sorted([1, 257, 513] * 4)
     if index in range(10):
-        byte_count = 2
-        x_bits = 0
-        y_bits = 8
-        dx = x_sign = None
-        dy = t1[index]
-        y_sign = ["-+"][index % 2]
+        data[0] = 2
+        data[1] = 0
+        data[2] = 8
+        data[4] = sequence1[index]
 
     elif index in range(20):
-        byte_count = 2
-        x_bits = 8
-        y_bits = 0
-        dx = t1[index % 10]
-        dy = y_sign = None
+        data[0] = 2
+        data[1] = 8
+        data[2] = 0
+        data[3] = sequence1[index - 10]
 
     elif index in range(36):
-        byte_count = 2
-        x_bits = y_bits = 4
-        dx = 1
-        dy = t2[index - 20]
+        data[0] = 2
+        data[1] = data[2] = 4
+        data[3] = 1
+        data[4] = sequence2[index - 20]
 
     elif index in range(52):
-        byte_count = 2
-        x_bits = y_bits = 4
-        dx = 17
-        dy = t2[index - 36]
+        data[0] = 2
+        data[1] = data[2] = 4
+        data[3] = 17
+        data[4] = sequence2[index - 36]
 
     elif index in range(68):
-        byte_count = 2
-        x_bits = y_bits = 4
-        dx = 33
-        dy = t2[index - 52]
+        data[0] = 2
+        data[1] = data[2] = 4
+        data[3] = 33
+        data[4] = sequence2[index - 52]
 
     elif index in range(84):
-        byte_count = 2
-        x_bits = y_bits = 4
-        dx = 49
-        dy = t2[index - 68]
+        data[0] = 2
+        data[1] = data[2] = 4
+        data[3] = 49
+        data[4] = sequence2[index - 68]
 
     elif index in range(96):
-        byte_count = 3
-        x_bits = y_bits = 8
-        dx = 1
-        dy = t3[index - 84]
+        data[0] = 3
+        data[1] = data[2] = 8
+        data[3] = 1
+        data[4] = sequence3[index - 84]
 
     elif index in range(108):
-        byte_count = 3
-        x_bits = y_bits = 8
-        dx = 257
-        dy = t3[index - 84]
+        data[0] = 3
+        data[1] = data[2] = 8
+        data[3] = 257
+        data[4] = sequence3[index - 96]
 
     elif index in range(120):
-        byte_count = 3
-        x_bits = y_bits = 8
-        dx = 513
-        dy = t3[index - 108]
+        data[0] = 3
+        data[1] = data[2] = 8
+        data[3] = 513
+        data[4] = sequence3[index - 108]
 
     elif index in range(124):
-        byte_count = 4
-        x_bits = y_bits = 12
-        dx = dy = 0
+        data[0] = 4
+        data[1] = data[2] = 12
+        data[3] = data[4] = 0
+
+    elif index in range(128):
+        data[0] = 5
+        data[1] = data[2] = 16
+        data[3] = data[4] = 0
+
+    if index in range(10):
+        data[6] = "-+"[index % 2]
 
     else:
-        byte_count = 5
-        x_bits = y_bits = 16
-        dx = dy = 0
+        data[5] = "-+"[index % 2]
+        if index > 20:
+            data[6] = "--++"[index % 4]
 
-    return x_bits, y_bits, dx, dy, x_sign, y_sign
+    return data
+
+
+known_table_lookup = [
+    "cmap",
+    "head",
+    "hhea",
+    "hmtx",
+    "maxp",
+    "name",
+    "OS/2",
+    "post",
+    "cvt ",
+    "fpgm",
+    "glyf",
+    "loca",
+    "prep",
+    "CFF ",
+    "VORG",
+    "EBDT",
+    "EBLC",
+    "gasp",
+    "hdmx",
+    "kern",
+    "LTSH",
+    "PCLT",
+    "VDMX",
+    "vhea",
+    "vmtx",
+    "BASE",
+    "GDEF",
+    "GPOS",
+    "GSUB",
+    "EBSC",
+    "JSTF",
+    "MATH",
+    "CBDT",
+    "CBLC",
+    "COLR",
+    "CPAL",
+    "SVG ",
+    "sbix",
+    "acnt",
+    "avar",
+    "bdat",
+    "bloc",
+    "bsln",
+    "cvar",
+    "fdsc",
+    "feat",
+    "fmtx",
+    "fvar",
+    "gvar",
+    "hsty",
+    "just",
+    "lcar",
+    "mort",
+    "morx",
+    "opbd",
+    "prop",
+    "trak",
+    "Zapf",
+    "Silf",
+    "Glat",
+    "Gloc",
+    "Feat",
+    "Sill",
+    "arbitrary",
+]

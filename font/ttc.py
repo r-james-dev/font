@@ -44,22 +44,16 @@ class File(object):
             ]
 
             for _ in range(num_tables):
-                tag, checksum, offset, length = otf.table_s.unpack(fp.read(TABLE_SIZE))
+                tag, _, offset, length = otf.table_s.unpack(fp.read(TABLE_SIZE))
 
                 ranges.append(range(offset, offset + length))
 
                 start = fp.tell()
                 fp.seek(offset)
-                table = tables.new_table(utils.tag2str(tag), fp.read(length))
+                table = tables.new_table(utils.tag2str(tag), fp.read(length), obj)
                 fp.seek(start)
 
                 otf_f.tables.append(table)
-                if checksum != table.checksum:
-                    raise Exception(
-                        "Invalid {} table checksum, expected: {}, received: {}".format(
-                            table.tag, table.checksum, checksum
-                        )
-                    )
 
             otf_f.tables.sort(key=lambda table: utils.str2tag(table.tag))
             obj.fonts.append(otf_f)
