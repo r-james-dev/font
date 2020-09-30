@@ -1,4 +1,5 @@
 from . import otf, tables, utils
+import io
 import struct
 
 header_s = struct.Struct(">I2HI")
@@ -14,6 +15,11 @@ UINT32_SIZE = 4
 class File(object):
     def __init__(self):
         self.fonts = []
+
+    @classmethod
+    def from_bytes(cls, bytes):
+        """Generate a TTC file from a string of bytes."""
+        return cls.from_file(io.BytesIO(bytes))
 
     @classmethod
     def from_file(cls, fp):
