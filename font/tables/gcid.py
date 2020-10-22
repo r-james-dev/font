@@ -24,14 +24,17 @@ class GlyphToCIDMappingTable(Table):
         del self.data
 
     def pack(self, *args):
-        return gcid_s.pack(
-            0,
-            0,
-            124 + 2 * len(self.cids),
-            self.registry,
-            self.registry_name[:64].ljust(64, "\0"),
-            self.order,
-            self.order_name[:64].ljust(64, "\0"),
-            self.supplement_version,
-            len(self.cids),
-        ) + struct.pack(f">{len(self.cids)}H", *self.cids)
+        return (
+            gcid_s.pack(
+                0,
+                0,
+                124 + 2 * len(self.cids),
+                self.registry,
+                self.registry_name[:64].ljust(64, "\0"),
+                self.order,
+                self.order_name[:64].ljust(64, "\0"),
+                self.supplement_version,
+                len(self.cids),
+            )
+            + struct.pack(f">{len(self.cids)}H", *self.cids)
+        )
