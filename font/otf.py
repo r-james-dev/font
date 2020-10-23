@@ -16,7 +16,7 @@ class File(object):
 
     def __init__(self):
         """Generate an empty OTF file."""
-        self.sfnt_version = None
+        self.sfnt_version = utils.str2tag("OTTO")
         self.tables = []
 
     @classmethod
