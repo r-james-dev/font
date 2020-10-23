@@ -63,6 +63,11 @@ class File(object):
         search_range, entry_selector, range_shift = utils.calc_search_range(
             len(self.tables)
         )
+        tags = {table.tag for table in self.tables}
+        required = {"cmap", "head", "hhea", "hmtx", "maxp", "name", "OS/2", "post"}
+        if len(tags.intersection(required)) < len(required):
+            raise Exception("Missing required tables from font.")
+
         data = header_s.pack(
             self.sfnt_version,
             len(self.tables),
